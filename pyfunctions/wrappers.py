@@ -1,5 +1,5 @@
 from fancy_einsum import einsum
-from typing import NamedTuple
+from typing import NamedTuple, TypeAlias
 import torch
 from dataclasses import dataclass
 
@@ -97,7 +97,7 @@ class Node(NamedTuple):
 # you want to decompose into (rel, irrel) in the forward pass
 # however, it performs a function analogous to ablation in other interpretability techniques,
 # in that we can determine the importance of these nodes
-type AblationSet = tuple[Node]
+AblationSet: TypeAlias = tuple[Node]
 
 class OutputDecomposition(NamedTuple):
     # batch_indices: List
