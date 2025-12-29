@@ -51,6 +51,7 @@ def prop_toy_model_4l(encoding_idxs: torch.Tensor,
             set_irrel_to_mean=False,
             cached_pre_layer_acts: Optional[list[torch.Tensor]] = None,
             target_decomp_method = "residual",
+            return_out_decomps: bool = True,
 ):
     head_mask = [None] * len(model.blocks)
 
@@ -117,14 +118,16 @@ def prop_toy_model_4l(encoding_idxs: torch.Tensor,
             target_decomps[idx] += layer_target_decomps[idx]
 
         # att_probs_lst.append(returned_att_probs.squeeze(0))
-    # return rel + irrel
-    rel, irrel = prop_layer_norm(rel, irrel, GPTLayerNormWrapper(model.ln_final))
-    rel_out, irrel_out = prop_GPT_unembed(rel, irrel, model.unembed)
-
     out_decomps = []
-    for ablation, batch_indices in ablation_dict.items():
-        rel_vec = rel_out[batch_indices, :].detach().cpu().numpy()
-        irrel_vec = irrel_out[batch_indices, :].detach().cpu().numpy()       
-        out_decomps.append(OutputDecomposition(ablation, rel_vec, irrel_vec))
+    if return_out_decomps:
+        # return rel + irrel
+        rel, irrel = prop_layer_norm(rel, irrel, GPTLayerNormWrapper(model.ln_final))
+        rel_out, irrel_out = prop_GPT_unembed(rel, irrel, model.unembed)
+
+        for ablation, batch_indices in ablation_dict.items():
+            rel_vec = rel_out[batch_indices, :].detach().cpu().numpy()
+            irrel_vec = irrel_out[batch_indices, :].detach().cpu().numpy()
+            out_decomps.append(OutputDecomposition(ablation, rel_vec, irrel_vec))
+
     att_probs_lst = [] # just to adhere to the API of analogous functions
     return out_decomps, target_decomps, att_probs_lst, pre_layer_acts

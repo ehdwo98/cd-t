@@ -2,11 +2,32 @@
 import random
 from dataclasses import dataclass
 from typing import List, Union, Dict, Optional, Tuple, Any
+
+import torch
 #from easy_transformer import EasyTransformer, ActivationCache, utils as et_utils
 from transformer_lens import EasyTransformer, HookedTransformer
 from typeguard import typechecked
-from torchtyping import patch_typeguard, TensorType as TT
-patch_typeguard()
+
+# torchtyping는 PyTorch 버전에 따라 _TensorBase 상속 오류가 날 수 있어
+# 호환 실패 시 타입힌트만 비활성화하는 폴백을 둔다.
+try:
+    from torchtyping import patch_typeguard, TensorType as TT
+    patch_typeguard()
+except Exception:
+    def patch_typeguard():
+        return None
+    class _TT:
+        def __class_getitem__(cls, item):
+            return Any  # type: ignore
+    TT = _TT  # type: ignore
+
+
+def logit_diff(logits, correct_tokens, wrong_tokens, pos: int = -1):
+    # Minimal helper for BatchedPrompts; avoids optional dependency on a separate misc module.
+    pos_logits = logits[:, pos, :]
+    correct_logits = torch.gather(pos_logits, dim=1, index=correct_tokens).max(dim=1).values
+    wrong_logits = torch.gather(pos_logits, dim=1, index=wrong_tokens).max(dim=1).values
+    return correct_logits - wrong_logits
 # from .misc import logit_diff
 from . import variables
 

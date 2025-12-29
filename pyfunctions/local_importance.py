@@ -3,7 +3,7 @@ import numpy as np
 import collections
 import matplotlib
 import tqdm
-from IPython.core.display import display, HTML
+from IPython.display import display, HTML
 from methods.bag_of_ngrams.processing import cleanReports, cleanSplit, stripChars
 from pyfunctions.config import BASE_DIR
 from pyfunctions.general import extractListFromDic, readJson
